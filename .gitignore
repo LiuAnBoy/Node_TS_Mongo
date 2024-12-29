@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build / Generated files
+dist/
+build/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Temp files
+temp/
+tmp/
+.temp/
+.tmp/
+
+# Debug
+.debug/
+
+# System Files
+.DS_Store
+Thumbs.db
