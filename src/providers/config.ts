@@ -2,18 +2,7 @@ import * as dotenv from "dotenv";
 import { Application } from "express";
 
 import { ConsoleHandler } from "../utils/consoleHandler";
-
-const REQUIRED_ENV_VARS = [
-  "MONGO_URI",
-  "LOGIN_CHANNEL_SECRET",
-  "LOGIN_CHANNEL_ID",
-  "MSG_CHANNEL_SECRET",
-  "MSG_CHANNEL_ACCESS_TOKEN",
-  "RENT_URL",
-  "RENT_API_URL",
-  "NOTIFY_CHANNEL_ID",
-  "NOTIFY_CHANNEL_SECRET",
-] as const;
+import REQUIRED_ENV_VARS from "../utils/required_env";
 
 class ConfigService {
   private static instance: ConfigService;
@@ -48,19 +37,7 @@ class ConfigService {
     try {
       const config = {
         PORT: Number(process.env.PORT) || DEFAULT_CONFIG.PORT,
-        APP_URL: process.env.APP_URL || DEFAULT_CONFIG.APP_URL,
         MONGO_URI: process.env.MONGO_URI || DEFAULT_CONFIG.MONGO_URI,
-        LOGIN_CHANNEL_SECRET:
-          process.env.LOGIN_CHANNEL_SECRET || DEFAULT_CONFIG.LOGIN_CHANNEL_SECRET,
-        LOGIN_CHANNEL_ID: process.env.LOGIN_CHANNEL_ID || DEFAULT_CONFIG.LOGIN_CHANNEL_ID,
-        MSG_CHANNEL_SECRET: process.env.MSG_CHANNEL_SECRET || DEFAULT_CONFIG.MSG_CHANNEL_SECRET,
-        MSG_CHANNEL_ACCESS_TOKEN:
-          process.env.MSG_CHANNEL_ACCESS_TOKEN || DEFAULT_CONFIG.MSG_CHANNEL_ACCESS_TOKEN,
-        RENT_URL: process.env.RENT_URL || DEFAULT_CONFIG.RENT_URL,
-        RENT_API_URL: process.env.RENT_API_URL || DEFAULT_CONFIG.RENT_API_URL,
-        NOTIFY_CHANNEL_ID: process.env.NOTIFY_CHANNEL_ID || DEFAULT_CONFIG.NOTIFY_CHANNEL_ID,
-        NOTIFY_CHANNEL_SECRET:
-          process.env.NOTIFY_CHANNEL_SECRET || DEFAULT_CONFIG.NOTIFY_CHANNEL_SECRET,
       };
       return config;
     } catch (error) {
@@ -89,12 +66,6 @@ class ConfigService {
       throw new Error("PORT must be a valid number greater than 0");
     }
 
-    try {
-      new URL(this.config.APP_URL);
-    } catch {
-      throw new Error("APP_URL is invalid");
-    }
-
     if (
       !this.config.MONGO_URI.startsWith("mongodb://") &&
       !this.config.MONGO_URI.startsWith("mongodb+srv://")
@@ -118,28 +89,10 @@ export default ConfigService;
 
 export interface EnvConfig {
   PORT: number;
-  APP_URL: string;
   MONGO_URI: string;
-  LOGIN_CHANNEL_SECRET: string;
-  LOGIN_CHANNEL_ID: string;
-  MSG_CHANNEL_SECRET: string;
-  MSG_CHANNEL_ACCESS_TOKEN: string;
-  RENT_URL: string;
-  RENT_API_URL: string;
-  NOTIFY_CHANNEL_ID: string;
-  NOTIFY_CHANNEL_SECRET: string;
 }
 
 const DEFAULT_CONFIG: EnvConfig = {
   PORT: 8000,
-  APP_URL: "http://localhost:8000",
   MONGO_URI: "",
-  LOGIN_CHANNEL_SECRET: "",
-  LOGIN_CHANNEL_ID: "",
-  MSG_CHANNEL_SECRET: "",
-  MSG_CHANNEL_ACCESS_TOKEN: "",
-  RENT_URL: "",
-  RENT_API_URL: "",
-  NOTIFY_CHANNEL_ID: "",
-  NOTIFY_CHANNEL_SECRET: "",
 };
