@@ -2,16 +2,20 @@ import express, { Application } from "express";
 import http from "http";
 
 import Middleware from "../middlewares";
+import { ConsoleHandler } from "../utils/consoleHandler";
 import ConfigService from "./config";
-
+import Route from "./route";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 class Express {
   public express: Application;
   private server: http.Server | null;
   private activeConnections: { [key: string]: any } = {};
+  private logger: ConsoleHandler;
 
   constructor() {
     this.express = express();
     this.server = null;
+    this.logger = ConsoleHandler.getInstance("Express");
   }
 
   private mountConfig(): void {
@@ -23,9 +27,14 @@ class Express {
     this.express = Middleware.init(this.express);
   }
 
+  private mountRoutes(): void {
+    this.express = Route.init(this.express);
+  }
+
   public init(): Application {
     this.mountConfig();
     this.mountMiddlewares();
+    this.mountRoutes();
     return this.express;
   }
 
@@ -35,15 +44,12 @@ class Express {
         const port = ConfigService.getInstance().getConfig().PORT;
 
         this.server = this.express.listen(port, () => {
-          console.log(
-            "\x1b[32m%s\x1b[0m",
-            `Server      :: Running SERVER @ 'http://localhost:${port}'`,
-          );
+          this.logger.log(`Running SERVER @ 'http://localhost:${port}'`);
           resolve();
         });
 
         this.server.on("error", (error) => {
-          console.error("\x1b[31m%s\x1b[0m", "Server      :: Error:", error.message);
+          this.logger.error("Error");
           reject(error);
         });
 
@@ -51,7 +57,7 @@ class Express {
         this.server.keepAliveTimeout = 65000;
         this.server.headersTimeout = 66000;
       } catch (error) {
-        console.error("\x1b[31m%s\x1b[0m", "Server      :: Failed to start:", error);
+        this.logger.error("Failed to start:");
         reject(error);
       }
     });
@@ -59,29 +65,29 @@ class Express {
 
   public async shutdown(): Promise<void> {
     if (!this.server) {
-      console.log("Server      :: No server instance running");
+      this.logger.warn("No server instance running");
       return;
     }
 
     return new Promise((resolve, reject) => {
-      console.log("\x1b[33m%s\x1b[0m", "Server      :: Shutting down...");
+      this.logger.warn("Shutting down...");
 
       // stop accepting new requests
       this.server?.close((err) => {
         if (err) {
-          console.error("\x1b[31m%s\x1b[0m", "Server      :: Error during shutdown:", err);
+          this.logger.error("Error during shutdown:");
           reject(err);
           return;
         }
 
-        console.log("\x1b[32m%s\x1b[0m", "Server      :: Shutdown completed");
+        this.logger.log("Shutdown completed");
         this.server = null;
         resolve();
       });
 
       // set timeout to force shutdown
       setTimeout(() => {
-        console.error("\x1b[31m%s\x1b[0m", "Server      :: Forced shutdown due to timeout");
+        this.logger.error("Forced shutdown due to timeout");
         reject(new Error("Server shutdown timeout"));
       }, 30000); // 30秒超時
 

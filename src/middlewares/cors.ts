@@ -2,10 +2,12 @@ import cors from "cors";
 import { Application } from "express";
 
 import ConfigService from "../providers/config";
+import { ConsoleHandler } from "../utils/consoleHandler";
 
 class CORS {
   public static mount(_express: Application): Application {
     const config = ConfigService.getInstance().getConfig();
+    const logger = ConsoleHandler.getInstance("Middleware");
     const options = {
       origin: config.APP_URL,
       optionsSuccessStatus: 200, // Some legacy browsers choke on 204
@@ -13,7 +15,7 @@ class CORS {
 
     _express.use(cors(options));
 
-    console.log("\x1b[32m%s\x1b[0m", "Middleware  :: Mount CORS middleware");
+    logger.log("Mount CORS middleware");
 
     return _express;
   }

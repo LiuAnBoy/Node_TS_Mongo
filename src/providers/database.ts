@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 
+import { ConsoleHandler } from "../utils/consoleHandler";
 import ConfigService from "./config";
-
-export class Database {
+class Database {
   private static isConnected = false;
+
+  private static logger = ConsoleHandler.getInstance("Database");
 
   public static async init(): Promise<void> {
     if (this.isConnected) {
-      console.log("\x1b[33m%s\x1b[0m", "Database    :: Already connected");
+      this.logger.warn("Already connected");
       return;
     }
 
@@ -15,51 +17,47 @@ export class Database {
     const dsn = config.MONGO_URI;
 
     try {
-      // 設置 mongoose 選項
       mongoose.set("strictQuery", false);
 
-      // 添加連接監聽器
       mongoose.connection.on("connected", () => {
         this.isConnected = true;
-        console.log("\x1b[32m%s\x1b[0m", "Database    :: Connected successfully");
+        this.logger.log("Connected successfully");
       });
 
       mongoose.connection.on("error", (err) => {
-        console.error("\x1b[31m%s\x1b[0m", "Database   :: MongoDB Connection error:", err);
+        this.logger.handleError(err);
       });
 
       mongoose.connection.on("disconnected", () => {
         this.isConnected = false;
-        console.log("\x1b[33m%s\x1b[0m", "Database    :: MongoDB Disconnected");
+        this.logger.warn("MongoDB Disconnected");
       });
 
-      // 設置連接選項
       const mongooseOptions = {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
-      };
+      } as mongoose.ConnectOptions;
 
-      // 建立連接
       await mongoose.connect(dsn, mongooseOptions);
     } catch (error) {
       this.isConnected = false;
-      console.error("\x1b[31m%s\x1b[0m", "Database    :: MongoDB Connection error:", error);
+      this.logger.handleError(error as Error);
       throw error;
     }
   }
 
   public static async disconnect(): Promise<void> {
     if (!this.isConnected) {
-      console.log("\x1b[33m%s\x1b[0m", "Database    :: No active connection");
+      this.logger.warn("No active connection");
       return;
     }
 
     try {
       await mongoose.disconnect();
       this.isConnected = false;
-      console.log("\x1b[32m%s\x1b[0m", "Database    :: Successfully disconnected");
+      this.logger.warn("Successfully disconnected");
     } catch (error) {
-      console.error("\x1b[31m%s\x1b[0m", "Database    :: Error disconnecting:", error);
+      this.logger.handleError(error as Error);
       throw error;
     }
   }
@@ -80,15 +78,16 @@ export class Database {
   }
 }
 
-// 處理程序終止信號
+// Use top-level await to handle program termination signals
 process.on("SIGINT", async () => {
+  const logger = ConsoleHandler.getInstance("Database");
   try {
     await Database.disconnect();
     process.exit(0);
   } catch (error) {
-    console.error("\x1b[31m%s\x1b[0m", "Database    :: Error during cleanup:", error);
+    logger.handleError(error as Error);
     process.exit(1);
   }
 });
 
-export default mongoose;
+export default Database;

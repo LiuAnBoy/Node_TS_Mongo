@@ -1,24 +1,26 @@
-// index.ts 或 server.ts
-import { Database } from "./providers/database";
+import Database from "./providers/database";
 import Express from "./providers/express";
+import { ConsoleHandler } from "./utils/consoleHandler";
 
 class Server {
+  private static logger = ConsoleHandler.getInstance("Server");
+
   private static async gracefulShutdown(signal: string): Promise<void> {
-    console.log(`\n${signal} received. Starting graceful shutdown...`);
+    this.logger.log(`${signal} received. Starting graceful shutdown...`);
 
     try {
       // close express server
       await Express.shutdown();
-      console.log("Server      :: server closed.");
+      this.logger.log("server closed.");
 
       // close database connection
       await Database.disconnect();
-      console.log("Database    :: connection closed.");
+      this.logger.log("connection closed.");
 
-      console.log("Application :: graceful shutdown completed.");
+      this.logger.log("graceful shutdown completed.");
       process.exit(0);
     } catch (error) {
-      console.error("Application :: Error during graceful shutdown:", error);
+      this.logger.handleError(error as Error);
       process.exit(1);
     }
   }
@@ -30,13 +32,13 @@ class Server {
     });
 
     // handle uncaught exceptions
-    process.on("unhandledRejection", (reason, promise) => {
-      console.error("Application :: Unhandled Rejection at:", promise, "reason:", reason);
+    process.on("unhandledRejection", (reason) => {
+      this.logger.handleError(reason as Error);
       this.gracefulShutdown("UNHANDLED_REJECTION");
     });
 
     process.on("uncaughtException", (error) => {
-      console.error("Application :: Uncaught Exception:", error);
+      this.logger.handleError(error);
       this.gracefulShutdown("UNCAUGHT_EXCEPTION");
     });
   }
@@ -47,13 +49,16 @@ class Server {
 
       // init express
       await Express.init();
-      await Express.start();
-
       // init database
       await Database.init();
-      console.log("\x1b[33m%s\x1b[0m", "Application :: Server started");
+
+      // start express
+      await Express.start();
+
+      this.logger.log("Server started");
     } catch (error) {
-      console.error("\x1b[31m%s\x1b[0m", "Application :: Failed to start:", error);
+      this.logger.error("Failed to start:");
+      this.logger.handleError(error as Error);
       process.exit(1);
     }
   }

@@ -1,10 +1,13 @@
 import { Application } from "express";
 
+import { ConsoleHandler } from "../utils/consoleHandler";
+
 class CsrfToken {
   public static mount(_express: Application): Application {
+    const logger = ConsoleHandler.getInstance("Middleware");
     _express.set("trust proxy", 1);
 
-    console.log("\x1b[32m%s\x1b[0m", "Middleware  :: Mount CSRFToken middleware");
+    logger.log("Mount CSRFToken middleware");
 
     return _express;
   }
