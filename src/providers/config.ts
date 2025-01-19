@@ -37,7 +37,6 @@ class ConfigService {
     try {
       const config = {
         PORT: Number(process.env.PORT) || DEFAULT_CONFIG.PORT,
-        MONGO_URI: process.env.MONGO_URI || DEFAULT_CONFIG.MONGO_URI,
       };
       return config;
     } catch (error) {
@@ -65,13 +64,6 @@ class ConfigService {
     if (isNaN(this.config.PORT) || this.config.PORT <= 0) {
       throw new Error("PORT must be a valid number greater than 0");
     }
-
-    if (
-      !this.config.MONGO_URI.startsWith("mongodb://") &&
-      !this.config.MONGO_URI.startsWith("mongodb+srv://")
-    ) {
-      throw new Error("MONGO_URI is invalid");
-    }
   }
 
   public getConfig(): EnvConfig {
@@ -89,10 +81,8 @@ export default ConfigService;
 
 export interface EnvConfig {
   PORT: number;
-  MONGO_URI: string;
 }
 
 const DEFAULT_CONFIG: EnvConfig = {
   PORT: 8000,
-  MONGO_URI: "",
 };

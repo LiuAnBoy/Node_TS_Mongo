@@ -1,3 +1,3 @@
-const REQUIRED_ENV_VARS = ["MONGO_URI"] as const;
+const REQUIRED_ENV_VARS = [] as const;
 
 export default REQUIRED_ENV_VARS;

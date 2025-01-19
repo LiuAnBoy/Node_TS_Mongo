@@ -1,9 +1,20 @@
 import dayjs from "dayjs";
 
 // 自定義錯誤類別
-class ConsoleError extends Error {
-  constructor(message: string) {
+class ServerError extends Error {
+  public success: boolean = false;
+
+  constructor(
+    message: string,
+    public statusCode: number = 500,
+  ) {
     super(message);
+    this.name = "ServerError";
+    this.statusCode = statusCode;
+    this.success = false;
+    ConsoleHandler.getInstance("Server").error(
+      `[ERROR]${this.name.padEnd(18, " ")}:: ${this.message} [${this.statusCode}]`,
+    );
   }
 }
 
@@ -100,4 +111,4 @@ class ConsoleHandler implements IConsoleHandler {
   }
 }
 
-export { ConsoleError, ConsoleHandler };
+export { ConsoleHandler, ServerError };

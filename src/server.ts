@@ -1,4 +1,3 @@
-import Database from "./providers/database";
 import Express from "./providers/express";
 import { ConsoleHandler } from "./utils/consoleHandler";
 
@@ -12,10 +11,6 @@ class Server {
       // close express server
       await Express.shutdown();
       this.logger.log("server closed.");
-
-      // close database connection
-      await Database.disconnect();
-      this.logger.log("connection closed.");
 
       this.logger.log("graceful shutdown completed.");
       process.exit(0);
@@ -49,8 +44,6 @@ class Server {
 
       // init express
       await Express.init();
-      // init database
-      await Database.init();
 
       // start express
       await Express.start();
